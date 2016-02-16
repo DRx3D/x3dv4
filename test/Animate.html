@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+<!--
+    X3DV4 Test of Animate node
+
+
+-->
+
+<head>
+    <title>Animate node Test - 3D the HTML Way</title>
+    <link rel='stylesheet' type="text/css" href='../../../../lib/x3dom.css'>
+    <script src="../../../../lib/jquery-1.10.2.js"></script>
+    <script src="../../../../lib/x3dom.debug.js"></script>
+	<script src='../../src/nodes/Time/Animate.js'></script>
+	<script src='../../src/nodes/Interpolation/Interpolate.js'></script>
+</head>
+<body>
+    <div id='scene'>
+        <X3D id="inline" showStat="true" showLog='true' x="0px" y="0px" width="800px" height="600px">
+            <Scene DEF='scene' id='Basx3DScene'>
+				<NavigationInfo headlight='true'></NavigationInfo>
+				<Transform DEF='TestObject'>
+					<Shape>
+						<Cone></Cone>
+						<Appearance>
+							<Material DEF='TestMaterial' diffuseColor='.4 .6 1'></Material>
+						</Appearance>
+					</Shape>
+				</Transform>
+				<Animate startTime='1' stopTime='0' maxFrameRate='30' enabled='TRUE' loop='TRUE' cycleInterval='4'>
+<!--
+					<Interpolate algorithm='LINEAR' space='1D'>
+						<key>0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0</key>
+						<keyValue>1.0 0.9 0.8 0.7 0.6 0.5 0.4 0.3 0.2 0.1 0.0</keyValue>
+					</Interpolate>
+-->
+					<Interpolate algorithm='LINEAR' space='1D' destinationNode='TestMaterial' destinationField='transparency' enabled='FALSE'
+						key='0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0'
+						keyValue='1.0 0.9 0.8 0.7 0.6 0.5 0.4 0.3 0.2 0.1 0.0'>
+					</Interpolate>
+					<Interpolate algorithm='LINEAR' space='3D' destinationNode='TestObject' destinationField='translation'
+						key='0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0'
+						keyValue='0 0 0  1 0 0  1 1 0  1 1 1  0 1 1  0 1 0  0 -1 0  0 -1 -1  0 0 -1  -1 0 -1  0 0 0'>
+					</Interpolate>
+					<Interpolate algorithm='LINEAR' space='COLOR' destinationNode='TestMaterial' destinationField='diffuseColor'
+						key='0.0 0.333 0.667 1.0'
+						keyValue='1 0 0  0 1 0  0 0 1  1 0 0'>
+					</Interpolate>
+					<Interpolate algorithm='LINEAR' space='ROTATION' destinationNode='TestObject' destinationField='rotation'
+						key='0.0 0.25 0.50 0.75 1.0'
+						keyValue='0 1 0 0  1 0 0 1  .707 0 .707 2  0 0 1 1  0 1 0 0'>
+					</Interpolate>
+				</Animate>
+            </Scene>
+        </X3D>
+    </div>
+</body>
+</html>
