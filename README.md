@@ -1,3 +1,7 @@
+The nodes included in this release are in development for the X3DOM environment to support
+mobile devices and VR environments. The intent is that these be included in X3D V4
+
+
 Welcome to X3DOM 
 ================
 X3DOM is a framework for integrating and manipulating (X)3D scenes as HTML5
