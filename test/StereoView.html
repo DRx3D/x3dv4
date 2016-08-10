@@ -1,0 +1,138 @@
+<html>
+<head>
+    <meta http-equiv='Content-Type' content='text/html;charset=utf-8'/>
+    <meta http-equiv="X-UA-Compatible" content="chrome=1,IE=edge" />
+	<link rel='stylesheet' type='text/css' href='page.css'>
+
+	<script type='text/javascript' src='http://www.x3dom.org/download/x3dom.js'> </script>
+
+	<script type='text/javascript' src='../src/nodes/Grouping/StereoView.js'> </script>
+	<script type='text/javascript' src='../src/nodes/Networking/Macro.js'> </script>
+
+	<link rel='stylesheet' type='text/css' href='http://www.x3dom.org/download/x3dom.css'/>
+	<link rel='stylesheet' type='text/css' href='target.css'>
+	<script type="text/javascript" src="http://code.jquery.com/jquery-2.1.0.min.js" ></script>
+	<style type='text/css' media='all'>
+.x3dom-logContainer {font-size:small;}
+#goFullScreen {font-size:200%; font-weight:bold; position:absolute; height30px; width:300px; border:1 solid black; background-color:white; border-radius:7px; z-index:2; top:0px; left:250px; text-align:center; padding:10px 0 10px 0; }
+	</style>
+	<script type='text/javascript' src='lib/browserFlags.js'></script>
+</head>
+
+<body style='width:100%; height:100%; border:0; margin:0; padding:0;'>
+	<div>
+		<b>Sensor:</b> <span id='sensor'>0</span>;
+		<b>Event:</b> <span id='event'>0</span>;
+		<div>
+			<b>Raw &ndash; </b>
+			<b>&alpha;:</b> <span id='alpha'>0.0</span>;
+			<b>&beta;:</b> <span id='beta'>0.0</span>;
+			<b>&gamma;</b>: <span id='gamma'>0.0</span>
+		</div>
+		<div>
+			<b>Adjusted &ndash; </b>
+			<b>&alpha;:</b> <span id='alpha_adj'>0.0</span>;
+			<b>&beta;:</b> <span id='beta_adj'>0.0</span>;
+			<b>&gamma;</b>: <span id='gamma_adj'>0.0</span>
+		</div>
+	</div>
+	<div id='controls'>
+		<div id='mobile'>
+			<div id='look-left-right'>
+				<label>Look Left-Right (<span id='llr_value'>0</span>)</label>
+				<div id='look-left-right-slider'></div>
+			</div>
+			<div id='up-down'>
+				<label>Tilt Up-Down (<span id='ud_value'>0</span>)</label>
+				<div id='up-down-slider'></div>
+			</div>
+			<div id='readout'>
+				<div>Speed: <span id='speed_value'>0</span></div>
+				<div>Turning: <span id='turn_value'>0</span></div>
+			</div>
+			<div id='steer-left-right'>
+				<label>Steer Left-Right (<span id='slr_value'>0</span>)</label>
+				<div id='steer-left-right-slider'></div>
+			</div>
+		</div>
+		<div id='viewing'>
+			<!--	<input id='ViewerButton' type='button' value='Viewer'> &nbsp; <input id='OverviewButton' type='button' value='Overview'>	-->
+			<input id='ViewMode' type='button' value='Mono'>
+		</div>
+	</div>
+    <div id='scene'>
+		<script>
+			if (flags.X3D) {
+				document.writeln ('<X3D id="x3dElement" x="0px" y="0px" width="768px" height="384px" showStat="' + flags.showStats + '" showLog="' + flags.showLog + '" >');
+			} else {
+				document.writeln ("<div style='display:none'>");
+			}
+		</script>
+    <scene id='Basx3DScene'>
+        <navigationInfo headlight='true' type='"EXAMINE" "WALK"'></navigationInfo>
+        <viewpoint DEF='vp' centerOfRotation='0 0 0' position='0 0 5'></viewpoint>
+        <background DEF='bgnd' skyColor="0.4 0.4 0.5"></background>
+        <group id='root' render='true'>
+            <group DEF='theScene'>
+				<Transform id='orient-spin' DEF='RotateObjectAlpha' rotation='0 1 0 0' translation='0 0 0'>
+					<Transform id='orient-tilt' DEF='RotateObjectGamma' rotation='0 1 0 0' translation='0 0 0'>
+						<Transform id='orient-compass' DEF='RotateObjectBeta' rotation='0 1 0 0' translation='0 0 0'>
+							<Transform DEF='Reposition' translation='0 0 0'>
+								<Inline url='model/Test-Static/basic-shapes.x3d'></Inline>
+							</Transform>
+						</Transform>
+					</Transform>
+				</Transform>
+            </group>
+        </group>
+
+		<StereoView id='svTest' mode="STEREO" interpupillaryDistance='0.3' viewpointDef='vp' backgroundDef='bgnd' groupDef='theScene'></StereoView>
+    </scene>
+	<script>
+		if (flags.X3D) {
+			document.writeln ('</X3D>');
+		} else {
+			document.writeln ('</div>');
+		}
+	</script>
+	</div>
+	
+	<div style='float:right; overflow:scroll; '>
+		<form name='DisplayOnly' action='' onsubmit='return false;'>
+			<input type='submit' value='Update X3D Display' onclick="getX3D('Basx3DScene', document.DisplayOnly.xmlDisplay); return false;"><br>
+			<textarea name='xmlDisplay' cols='60' rows='30'></textarea>
+		</form>
+	</div>
+
+<script type="text/javascript" src="http://realism.com/sample/model/_lib/display.js?v=4"></script>
+<script type="text/javascript">
+function getX3D (source, display) {
+	//e = jQuery('#'+source);
+	var e = document.body;
+	var qq = (new XMLSerializer()).serializeToString(e);
+	display.value = qq;
+}
+//cb = new DeviceDisplay ('x3dElement', 'orient-compass', 'orient-tilt', 'orient-spin', 'Shapes', true, 'rtLeft', 'rtRight');
+//document.onload = function() {loadStereographic(cb); fullscreen(cb);};
+//jQuery("#goFullScreen").click(function() {fullscreen(cb);});
+
+var modes = new Array ('Stereo', 'Mono');
+jQuery(document).ready(function() {
+	$('#ViewMode').click(function() {
+		var newMode = 0;
+		if (this.value == modes[0]) {
+			newMode = 1;
+		} else if (this.value == modes[1]) {
+			newMode = 0;
+		}
+//		$('#svTest').setFieldValue('mode', modes[newMode]);
+		this.value = modes[newMode];
+		var currentMode = document.getElementById('svTest').getAttribute('mode');
+		var stereoNode = document.getElementById('svTest');
+		var newMode = modes[1-newMode].toUpperCase();
+		stereoNode.setAttribute ('mode', newMode);
+	});
+});
+</script>
+</body>
+</html>
