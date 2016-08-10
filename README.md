@@ -18,15 +18,6 @@ Please have a look at the official documentation in order to get started:
 
 http://doc.x3dom.org
 
-Version 4 is documented at 
-
-http://tools.realism.com/specification/x3d-v40
-
-with the motivation and philosophy documented at 
-
-http://tools.realism.com/specification/x3d-v40/authors-notes
-
-
 
 Need help?
 ----------
