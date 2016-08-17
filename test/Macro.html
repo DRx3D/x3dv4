@@ -1,0 +1,128 @@
+<html>
+<head>
+    <meta http-equiv='Content-Type' content='text/html;charset=utf-8'/>
+    <meta http-equiv="X-UA-Compatible" content="chrome=1,IE=edge" />
+	<link rel='stylesheet' type='text/css' href='page.css'>
+	<link rel='stylesheet' type='text/css' href='http://www.x3dom.org/download/x3dom.css'/>
+	<script type='text/javascript' src='http://www.x3dom.org/download/x3dom.js'> </script>
+	<script type='text/javascript' src='../src/nodes/Networking/Macro.js'> </script>
+	<link rel='stylesheet' type='text/css' href='target.css'>
+	<script type="text/javascript" src="http://code.jquery.com/jquery-2.1.0.min.js" ></script>
+
+	<script src="http://realism.com/sample/model/_lib/ui/1.11.1/jquery-ui.js"></script>
+	<script>
+var urlSearch = window.location.search.substring(1,window.location.search.length);
+var nvPairs = urlSearch.split('&');
+var tf = {'1':true, 'true':true, 'TRUE':true, '0':false, 'false':false, 'FALSE':false};
+var flags = {
+			DEBUG :		0,
+			DESKTOP :	0,
+			VIEW :		'Viewer',
+			X3D :		1
+			};
+for (ii=0; ii<nvPairs.length; ii++) {
+	nv = nvPairs[ii].split('=');
+	flags[nv[0].toUpperCase()] = nv[1];
+}
+flags.showStats	= tf[flags.DEBUG];
+flags.showLog	= tf[flags.DEBUG];
+flags.DESKTOP	= tf[flags.DESKTOP];
+flags.X3D		= tf[flags.X3D];
+
+if (flags.DESKTOP) {
+	document.writeln ('<scri' + 'pt src="lib/jquery-ui-1.11.4/jquery-ui.js"></scr' + 'ipt>');
+	document.writeln ('<link rel="stylesheet" type="text/css" href="lib/jquery-ui-1.11.4/jquery-ui.css">');
+}
+	</script>
+	<style type='text/css' media='all'>
+	#goFullScreen {font-size:200%; font-weight:bold; position:absolute; height30px; width:300px; border:1 solid black; background-color:white; border-radius:7px; z-index:2; top:0px; left:250px; text-align:center; padding:10px 0 10px 0; }
+	</style>
+</head>
+
+<body style='width:100%; height:100%; border:0; margin:0; padding:0;'>
+<!--
+	<div>
+		<b>Sensor:</b> <span id='sensor'>0</span>;
+		<b>Event:</b> <span id='event'>0</span>;
+		<div>
+			<b>Raw &ndash; </b>
+			<b>&alpha;:</b> <span id='alpha'>0.0</span>;
+			<b>&beta;:</b> <span id='beta'>0.0</span>;
+			<b>&gamma;</b>: <span id='gamma'>0.0</span>
+		</div>
+		<div>
+			<b>Adjusted &ndash; </b>
+			<b>&alpha;:</b> <span id='alpha_adj'>0.0</span>;
+			<b>&beta;:</b> <span id='beta_adj'>0.0</span>;
+			<b>&gamma;</b>: <span id='gamma_adj'>0.0</span>
+		</div>
+		<div id='goFullScreen'>Go Full Screen</div>
+	</div>
+-->
+<!--
+	<div id='controls'>
+		<div id='mobile'>
+			<div id='look-left-right'>
+				<label>Look Left-Right (<span id='llr_value'>0</span>)</label>
+				<div id='look-left-right-slider'></div>
+			</div>
+			<div id='up-down'>
+				<label>Tilt Up-Down (<span id='ud_value'>0</span>)</label>
+				<div id='up-down-slider'></div>
+			</div>
+			<div id='readout'>
+				<div>Speed: <span id='speed_value'>0</span></div>
+				<div>Turning: <span id='turn_value'>0</span></div>
+			</div>
+			<div id='steer-left-right'>
+				<label>Steer Left-Right (<span id='slr_value'>0</span>)</label>
+				<div id='steer-left-right-slider'></div>
+			</div>
+		</div>
+		<div id='viewing'>
+			<input id='ViewerButton' type='button' value='Viewer'> &nbsp; <input id='OverviewButton' type='button' value='Overview'>
+		</div>
+	</div>
+-->	
+    <div id='scene'>
+		<script>
+			if (flags.X3D) {
+				document.writeln ('<X3D id="x3dElement" x="0px" y="0px" width="768px" height="384px" showStat="' + flags.showStats + '" showLog="' + flags.showLog + '" >');
+			} else {
+				document.writeln ("<div style='display:none'>");
+			}
+		</script>
+    <scene id='x3dv4'>
+        <navigationInfo headlight='true' type='"EXAMINE" "WALK"'></navigationInfo>
+		<transform position='-2 0 0'>
+			<macro url='testMacro.x3d'>
+				<parameters>
+					<param name='color' value='1 0 0'></param>
+					<param name='DefId' value='o1'></param>
+				</parameters>
+			</macro>
+		</transform>
+		<transform position='+2 0 0'>
+			<macro url='testMacro.x3d'>
+				<parameters>
+					<param name='color' value='0 1 0'></param>
+					<param name='DefId' value='o2'></param>
+				</parameters>
+			</macro>
+		</transform>
+    </scene>
+	<script>
+		if (flags.X3D) {
+			document.writeln ('</X3D>');
+		} else {
+			document.writeln ('</div>');
+		}
+	</script>
+	</div>
+
+<script type="text/javascript" src="http://realism.com/sample/model/_lib/display.js?v=4"></script>
+<script type="text/javascript">
+jQuery("#goFullScreen").click(function() {fullscreen(cb);});
+</script>
+</body>
+</html>

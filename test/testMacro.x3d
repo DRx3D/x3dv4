@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE X3D PUBLIC "ISO//Web3D//DTD X3D 3.2//EN" "http://www.web3d.org/specifications/x3d-3.2.dtd">
+<X3D profile='Immersive' version='3.2' xmlns:xsd='http://www.w3.org/2001/XMLSchema-instance' xsd:noNamespaceSchemaLocation='http://www.web3d.org/specifications/x3d-3.2.xsd'>
+    <head>
+        <meta content='testMacro.x3d' name='title'/>
+        <meta content='Simple test scene for stereo viewing a la cardboard' name='description'/>
+        <meta content='Leonard Daly' name='creator'/>
+        <meta content='2016-08-16' name='created'/>
+        <meta content='*enter date of latest revision here*' name='modified'/>
+        <meta content='*enter version here, if any*' name='version'/>
+        <meta content='Copyright 2016, Daly Realism' name='rights'/>
+        <meta content='*enter subject keywords here*' name='subject'/>
+        <meta content='*enter permission statements or url here*' name='accessRights'/>
+        <meta content='*enter online Uniform Resource Identifier (URI) or Uniform Resource Locator (URL) address for this file here*' name='identifier'/>
+        <meta content='../../license.html' name='license'/>
+        <!-- Additional authoring resources for meta-tags: http://www.dublincore.org/documents/dcmi-terms http://www.dublincore.org/documents/dces http://www.w3.org/TR/html4/struct/global.html#h-7.4.4 http://vancouver-webpages.com/META http://vancouver-webpages.com/META/about-mk-metas2.html Additional authoring resources for language codes: ftp://ftp.isi.edu/in-notes/bcp/bcp47.txt http://www.loc.gov/standards/iso639-2/langhome.html http://www.iana.org/numbers.html#L -->
+   </head>
+    <Scene>
+<shape id='%DefId%>
+	<cone></cone>
+	<appearance>
+		<material diffuseColor='%color%'></material>
+	</appearance>
+</shape>
+    </Scene>
+</X3D>
