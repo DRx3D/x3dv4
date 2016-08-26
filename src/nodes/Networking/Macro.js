@@ -69,6 +69,16 @@ x3dom.registerNodeType(
             this.addField_MFString(ctx, 'nameSpaceName', ['_internal']);
 
             /**
+             * Specifies the substituion parameters of the Macro node.
+             * @var {x3dom.fields.MFString} params
+             * @memberof x3dom.nodeTypes.Macro
+             * @initvalue []
+             * @field x3dom
+             * @instance
+             */
+            this.addField_MFString(ctx, 'params', []);
+
+            /**
              * Specifies whether the DEF value is used as id when no other id is set.
              * @var {x3dom.fields.SFBool} mapDEFToID
              * @memberof x3dom.nodeTypes.Macro
@@ -162,102 +172,146 @@ x3dom.registerNodeType(
             },
 
 /*
- *	Use MACRO expansion of embedded code to achieve results
+ * Loads a external Xml resource into a string
  */
-            loadMacro: function ()
+            loadExternalXml: function ()
             {
-                var inlScene = null, newScene = null, nameSpace = null, xml = null;
+                var that = this;
 
-				var params = {
-							};
-				var nameSpaceName = 'int';
-				var nsName = (this._vf.nameSpaceName.length != 0) ? this._vf.nameSpaceName.toString().replace(' ','') : "";
-				var url = this._vf.url.length ? this._vf.url[0] : "";
-				var url = new Array ('_internal__');
+                var xhr = new window.XMLHttpRequest();
+                if (xhr.overrideMimeType)
+                    xhr.overrideMimeType('text/xml');   //application/xhtml+xml
+				//xhr.resultSuccess = success;
 
-//				var inlScene = ParseMacro (this._vf.expand, params);
-				var newScene = InsertSceneFragment (this._vf.expand, params, nsName, url, this._vf.mapDEFToID, this);
-				var that = this;
-/*
-					if (inlScene) {
-                        nameSpace = new x3dom.NodeNameSpace(nsName, that._nameSpace.doc);
-
-                        if ((url[0] === '/') || (url.indexOf(":") >= 0))
-                            nameSpace.setBaseURL(url);
-                        else
-                            nameSpace.setBaseURL(that._nameSpace.baseURL + url);
-
-                        newScene = nameSpace.setupTree(inlScene);
-                        that._nameSpace.addSpace(nameSpace);
-
-                        if(that._vf.nameSpaceName.length != 0) {
-                            Array.forEach ( inlScene.childNodes, function (childDomNode)
-                            {
-                                if(childDomNode instanceof Element)
-                                {
-									x3dom.debug.logInfo('Loading node from Macro: ' + childDomNode + ' (' + childDomNode._x3domNode._DEF + ')');
-                                    setNamespace(that._vf.nameSpaceName, childDomNode, that._vf.mapDEFToID);
-                                    that._xmlNode.appendChild(childDomNode);
-                                }
-                            } );
-                        }
-                    } else {
-                        if (xml && xml.localName)
-                            x3dom.debug.logError('No Scene in ' + xml.localName);
-                        else
-                            x3dom.debug.logError('No Scene in resource');
+                xhr.onreadystatechange = function ()
+                {
+                    if (xhr.readyState != 4) {
+                        // still loading
+                        //x3dom.debug.logInfo('Loading inlined data... (readyState: ' + xhr.readyState + ')');
+                        return xhr;
                     }
- */
- 
-                    // trick to free memory, assigning a property to global object, then deleting it
-                    var global = x3dom.getGlobal();
 
-                    if (that._childNodes.length > 0 && that._childNodes[0] && that._childNodes[0]._nameSpace)
-                        that._nameSpace.removeSpace(that._childNodes[0]._nameSpace);
-
-                    while (that._childNodes.length !== 0)
-                        global['_remover'] = that.removeChild(that._childNodes[0]);
-
-                    delete global['_remover'];
-
-                    if (newScene)
-                    {
-                        that.addChild(newScene);
-
-                        that.invalidateVolume();
-                        //that.invalidateCache();
+                    if (xhr.status === x3dom.nodeTypes.Inline.AwaitTranscoding) {
+                        if (that.count < that.numRetries)
+                        {
+                            that.count++;
+                            var refreshTime = +xhr.getResponseHeader("Refresh") || 5;
+                            x3dom.debug.logInfo('XHR status: ' + xhr.status + ' - Await Transcoding (' + that.count + '/' + that.numRetries + '): ' + 
+                                                'Next request in ' + refreshTime + ' seconds');
+                      
+                            window.setTimeout(function() {
+                                that._nameSpace.doc.downloadCount -= 1;
+                                that.loadExternalXml();
+                            }, refreshTime * 1000);
+                            return xhr;
+                        }
+                        else
+                        {
+                            x3dom.debug.logError('XHR status: ' + xhr.status + ' - Await Transcoding (' + that.count + '/' + that.numRetries + '): ' + 
+                                                 'No Retries left');
+                            that._nameSpace.doc.downloadCount -= 1;
+                            that.count = 0;
+                            return xhr;
+                        }
+                    }
+                    else if ((xhr.status !== 200) && (xhr.status !== 0)) {
+                        that.fireEvents("error");
+                        x3dom.debug.logError('XHR status: ' + xhr.status + ' - XMLHttpRequest requires web server running!');
 
                         that._nameSpace.doc.downloadCount -= 1;
-                        that._nameSpace.doc.needRender = true;
-                        x3dom.debug.logInfo('Macro: added ' + that._vf.url[0] + ' to scene.');
-
-                        // recalc changed scene bounding box twice
-                        var theScene = that._nameSpace.doc._scene;
-
-                        if (theScene) {
-                            theScene.invalidateVolume();
-                            //theScene.invalidateCache();
-
-                            window.setTimeout( function() {
-                                that.invalidateVolume();
-                                //that.invalidateCache();
-
-                                theScene.updateVolume();
-                                that._nameSpace.doc.needRender = true;
-                            }, 1000 );
-                        }
-
-                        that.fireEvents("load");
+                        that.count = 0;
+                        return xhr;
+                    }
+                    else if ((xhr.status == 200) || (xhr.status == 0)) {
+                        that.count = 0;
                     }
 
-                    newScene = null;
-                    nameSpace = null;
-                    inlScene = null;
-                    xml = null;
+                    x3dom.debug.logInfo('Inline: downloading '+that._vf.url[0]+' done.');
 
-//                    return xhr;
-//                };
+					that.loadExternalSuccess(xhr);
+					that.fireEvents("load");
+                    return xhr;
+                };
 
+                if (this._vf.url.length && this._vf.url[0].length)
+                {
+                    var xhrURI = this._nameSpace.getURL(this._vf.url[0]);
+                    xhr.open('GET', xhrURI, true);
+                    this._nameSpace.doc.downloadCount += 1;
+                    try {
+                        xhr.send(null);
+                    }
+                    catch(ex) {
+                        this.fireEvents("error");
+                        x3dom.debug.logError(this._vf.url[0] + ": " + ex);
+                    }
+                }
+            },
+
+
+/*
+ *	Use MACRO expansion of embedded code to achieve results
+ *
+ *	Grab namespaceName and params from fields
+ *	Supplied function does all work of inserting nodes into DOM/X3D-scenegraph
+ *
+ *	loadExternalXml probably should be method in Networking class and used by Networking nodes
+ *	InsertSceneFragment should be a x3dom library method
+ */
+			loadExternalSuccess: function (xhr) 
+			{
+				x3dom.debug.logInfo ('loadExternal success routine');
+				x3dom.debug.logInfo ('NamespaceName = ' + this._vf.nameSpaceName.toString());
+				x3dom.debug.logInfo ('Parameters = ' + this._vf.params.toString());
+				var params = [];
+				var pieces = [];
+				for (var ii=0; ii<this._vf.params.length; ii++) {
+					pieces = this._vf.params[ii].toString().split('=');
+					params[pieces[0]] = pieces[1];
+				}
+				x3dom.debug.logInfo ('Creating NV arry complete');
+				var inlMarkup = ParseMacro (xhr.responseText, params);
+				
+//  --> Get XML markup inside the first Scene element
+//				var inlScene = this.getInlineSceneNodes (inlMarkup);
+				var inlScene = MarkupToXml (inlMarkup);
+
+// --> If XML (meaning X3D code) parses, then append the code to this node.
+				if (inlScene !== undefined && inlScene !== null) {
+					this._xmlNode.appendChild (inlScene);
+				} else {
+					that.fireEvents("error");
+                };
+				inlScene = null;
+
+			},
+
+// --> Parse X3D code from string to XML
+			getInlineScene(code) {
+				var parser = new DOMParser();
+				var xml = parser.parseFromString (code, "text/xml");
+				if (xml !== undefined && xml !== null) {
+					var inlScene = xml.getElementsByTagName('Scene')[0] || xml.getElementsByTagName('scene')[0];
+					var subthis = new Array();
+					subthis.serializer = new XMLSerializer();
+					subthis.code = '';
+					Array.forEach ( inlScene.childNodes, function (childDomNode)
+						{
+							if (childDomNode instanceof Element) {
+								this['code'] += this.serializer.serializeToString(childDomNode);
+							}
+						}, subthis);
+					return subthis.code;
+				}
+				return '';
+			},
+			
+			
+            loadMacro: function ()
+            {
+				this.loadExternalXml ();
+                var inlScene = null, newScene = null, nameSpace = null, xml = null;
+				return;
             }
         }
     )
@@ -278,8 +332,12 @@ function ParseMacro (code, params) {
 		re = new RegExp ("\%" + fields[ii] + "\%", "g");
 		mcode = mcode.replace(re, params[fields[ii]]);
 	}
+	return mcode;
+}
+function MarkupToXml (markup) {
 	var parser = new DOMParser();
-	var xml = parser.parseFromString ('<Scene>' + mcode + '</Scene>', "text/xml");
+//	var xml = parser.parseFromString ('<Scene>' + markup + '</Scene>', "text/xml");
+	var xml = parser.parseFromString (markup, "text/xml");
 	if (xml !== undefined && xml !== null) {
 		inlScene = xml.getElementsByTagName('Scene')[0] || xml.getElementsByTagName('scene')[0];
 
@@ -291,76 +349,4 @@ function ParseMacro (code, params) {
 	}
 
 	return inlScene;
-}
-
-function InsertSceneFragment (code, params, nsName, url, mapDEFToID, that) {
-
-	var nameSpace = null, newScene = null, inlScene = null;
-	inlScene = ParseMacro (code, params);
-
-/*
- *	Need to create subscene when no namespace is defined -- similar to addChildren event 
- *	so the result goes into the same namespace as the parent node
- */
-
-	if (inlScene) {
-		if (nsName != "") {
-			nameSpace = new x3dom.NodeNameSpace(nsName, that._nameSpace.doc);
-
-			if ((url[0] === '/') || (url.indexOf(":") >= 0))
-				nameSpace.setBaseURL(url);
-			else
-				nameSpace.setBaseURL(that._nameSpace.baseURL + url);
-
-			newScene = nameSpace.setupTree(inlScene);
-			that._nameSpace.addSpace(nameSpace);
-
-			Array.forEach (inlScene.childNodes,
-							function (childDomNode) {
-								if(childDomNode instanceof Element) {
-									x3dom.debug.logInfo('Loading node from Macro: ' + childDomNode.localName + ' (' + childDomNode._x3domNode._DEF + ')');
-									if (childDomNode.localName == 'Shape') {
-										console.log('Processing Shape node');
-									} else if (childDomNode.localName.substr(0,6).toLowerCase() == 'shader') {
-										console.log('Processing Shader* node');
-									}
-									setNamespace(nsName, childDomNode, mapDEFToID);
-									that._xmlNode.appendChild(childDomNode);
-								}
-							}
-							);
-		} else {
-			Array.forEach (inlScene.childNodes,
-							function (childDomNode) {
-								if(childDomNode instanceof Element) {
-									//x3dom.debug.logInfo('Loading node from Macro: ' + childDomNode + ' (' + childDomNode._x3domNode._DEF + ')');
-									that._xmlNode.appendChild(childDomNode);
-								}
-							}
-							);
-		}
-	}
-	return newScene;
-}
-
-
-function setNamespace(prefix, childDomNode, mapDEFToID)
-{
-    if(childDomNode instanceof Element && childDomNode.__setAttribute !== undefined) {
-
-        if(childDomNode.hasAttribute('id') )	{
-            childDomNode.__setAttribute('id', prefix.toString().replace(' ','') +'__'+ childDomNode.getAttribute('id'));
-        } else if (childDomNode.hasAttribute('DEF') && mapDEFToID){
-            childDomNode.__setAttribute('id', prefix.toString().replace(' ','') +'__'+ childDomNode.getAttribute('DEF'));
-            // workaround for Safari
-            if (!childDomNode.id)
-                childDomNode.id = childDomNode.__getAttribute('id');
-        }
-    }
-
-    if(childDomNode.hasChildNodes()){
-        Array.forEach ( childDomNode.childNodes, function (children) {
-            setNamespace(prefix, children, mapDEFToID);
-        } );
-    }
 }

@@ -16,8 +16,8 @@
         <!-- Additional authoring resources for meta-tags: http://www.dublincore.org/documents/dcmi-terms http://www.dublincore.org/documents/dces http://www.w3.org/TR/html4/struct/global.html#h-7.4.4 http://vancouver-webpages.com/META http://vancouver-webpages.com/META/about-mk-metas2.html Additional authoring resources for language codes: ftp://ftp.isi.edu/in-notes/bcp/bcp47.txt http://www.loc.gov/standards/iso639-2/langhome.html http://www.iana.org/numbers.html#L -->
    </head>
     <Scene>
-<shape id='%DefId%>
-	<cone></cone>
+<shape id='%DefId%'>
+	<%geometry%></%geometry%>
 	<appearance>
 		<material diffuseColor='%color%'></material>
 	</appearance>

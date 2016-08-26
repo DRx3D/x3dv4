@@ -94,21 +94,11 @@ if (flags.DESKTOP) {
 		</script>
     <scene id='x3dv4'>
         <navigationInfo headlight='true' type='"EXAMINE" "WALK"'></navigationInfo>
-		<transform position='-2 0 0'>
-			<macro url='testMacro.x3d'>
-				<parameters>
-					<param name='color' value='1 0 0'></param>
-					<param name='DefId' value='o1'></param>
-				</parameters>
-			</macro>
+		<transform translation='-2 0 0'>
+			<macro url='testMacro.x3d' params='"color=1 0 0" "DefId=o1" "geometry=cylinder"'></macro>
 		</transform>
-		<transform position='+2 0 0'>
-			<macro url='testMacro.x3d'>
-				<parameters>
-					<param name='color' value='0 1 0'></param>
-					<param name='DefId' value='o2'></param>
-				</parameters>
-			</macro>
+		<transform translation='+2 0 0'>
+			<macro url='testMacro.x3d' params='"color=0 1 0" "DefId=o2" "geometry=cone"'></macro>
 		</transform>
     </scene>
 	<script>
@@ -120,9 +110,5 @@ if (flags.DESKTOP) {
 	</script>
 	</div>
 
-<script type="text/javascript" src="http://realism.com/sample/model/_lib/display.js?v=4"></script>
-<script type="text/javascript">
-jQuery("#goFullScreen").click(function() {fullscreen(cb);});
-</script>
 </body>
 </html>
