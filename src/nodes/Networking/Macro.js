@@ -229,6 +229,7 @@ x3dom.registerNodeType(
                     x3dom.debug.logInfo('Inline: downloading '+that._vf.url[0]+' done.');
 
 					that.loadExternalSuccess(xhr);
+					that._nameSpace.doc.downloadCount -= 1;
 					that.fireEvents("load");
                     return xhr;
                 };
