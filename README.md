@@ -1,6 +1,9 @@
 The nodes included in this release are in development for the X3DOM environment to support
 mobile devices and VR environments. The intent is that these be included in X3D V4
 
+Documentation for V4 nodes is at http://tools.realism.com/specification/x3d-v40
+Documentation for specific nodes is at http://tools.realism.com/specification/x3d-v40/changes-additions-x3d-v33
+
 
 Welcome to X3DOM 
 ================
