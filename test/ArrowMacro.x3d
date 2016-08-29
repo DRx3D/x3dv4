@@ -44,6 +44,6 @@
                   </Transform>
                 </Billboard>
               </Transform>
-            
+            </Transform>
     </Scene>
 </X3D>
