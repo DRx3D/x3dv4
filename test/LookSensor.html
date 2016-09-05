@@ -3,16 +3,12 @@
     <meta http-equiv='Content-Type' content='text/html;charset=utf-8'/>
     <meta http-equiv="X-UA-Compatible" content="chrome=1,IE=edge" />
 	<link rel='stylesheet' type='text/css' href='page.css'>
-    <!-- script src="lib/jquery-1.10.2.js"></script>
-	<script src="lib/jquery-ui-1.11.4/jquery-ui.js"></script -->
-	<!-- script type='text/javascript' src='http://www.x3dom.org/download/x3dom.js'> </script -->
-
-	<script type='text/javascript' src='../../v4/x3dom.js'> </script>
-	
+	<link rel='stylesheet' type='text/css' href='http://www.x3dom.org/download/x3dom.css'/>
+	<script type='text/javascript' src='http://www.x3dom.org/download/x3dom.js'> </script>
 	<script type='text/javascript' src='../src/nodes/PointingDeviceSensor/LookSensor.js'> </script>
 
 	<link rel='stylesheet' type='text/css' href='http://www.x3dom.org/download/x3dom.css'/>
-	<link rel='stylesheet' type='text/css' href='target.css'>
+	<link rel='stylesheet' type='text/css' href='LookSensor.css'>
 	<script type="text/javascript" src="http://code.jquery.com/jquery-2.1.0.min.js" ></script>
 
 	<script src="http://realism.com/sample/model/_lib/ui/1.11.1/jquery-ui.js"></script>
@@ -106,7 +102,7 @@ if (flags.DESKTOP) {
         <viewpoint DEF='vp' centerOfRotation='0 0 0' position='0 0 10'></viewpoint>
         <background DEF='bgnd' skyColor="0.4 0.4 0.5"></background>
 		<Transform DEF='CenterBox' translation='0 0 0'>
-			<Shape id='center_box'>
+			<Shape id='center_box' class='s1'>
 				<Box size='1 1 1'></Box>
 				<Appearance>
 					<Material diffusecolor='1 0 0'></Material>
@@ -114,7 +110,7 @@ if (flags.DESKTOP) {
 			</Shape>
 		</Transform>
 		<Transform DEF='LeftSphere' translation='-4 0 0'>
-			<Shape id='left_sphere'>
+			<Shape id='left_sphere' class='s2'>
 				<Sphere radius='.5'></Sphere>
 				<Appearance>
 					<Material diffusecolor='0 1 0'></Material>
@@ -122,14 +118,14 @@ if (flags.DESKTOP) {
 			</Shape>
 		</Transform>
 		<Transform DEF='RightCone' translation='4 0 0'>
-			<Shape id='right_cone'>
+			<Shape id='right_cone' class='s3'>
 				<Cone height='1' bottomRadius='.5'></Cone>
 				<Appearance>
 					<Material diffusecolor='0 0 1'></Material>
 				</Appearance>
 			</Shape>
 		</Transform>
-		<LookSensor></LookSensor>
+		<LookSensor enabled='TRUE'></LookSensor>
 	</scene>
 	<script>
 		if (flags.X3D) {
@@ -140,45 +136,31 @@ if (flags.DESKTOP) {
 	</script>
 	</div>
 	
-	<div style='float:right; overflow:scroll; '>
-		<form name='DisplayOnly' action='' onsubmit='return false;'>
-			<textarea id='ResultDisplay' name='ResultDisplay' cols='60' rows='30'></textarea>
-		</form>
+	<div style='float:right; overflow:scroll; height:250px; width:200px; '>
+		<div style='background-color:white; width:100px; height:50px; padding:8px; margin-bottom:25px; '>
+			<div id='x3dom_LookSensor_target' class='x3dom_LookSensor_border1'>
+				<div class='x3dom_LookSensor_border2'>
+					<div id='x3dom_LookSensor_time1' class='x3dom_LookSensor_time1'>
+						<div id='x3dom_LookSensor_time2' class='x3dom_LookSensor_time2'>
+							<div id='x3dom_LookSensor_time3' class='x3dom_LookSensor_time3'>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div style='background-color:black; width:100px; height:50px; padding:8px; '>
+			<div id='x3dom_LookSensor_target' class='x3dom_LookSensor_border1'>
+				<div class='x3dom_LookSensor_border2'>
+					<div id='x3dom_LookSensor_time1' class='x3dom_LookSensor_time1'>
+						<div id='x3dom_LookSensor_time2' class='x3dom_LookSensor_time2'>
+							<div id='x3dom_LookSensor_time3' class='x3dom_LookSensor_time3'>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
 	</div>
-
-<script type="text/javascript" src="http://realism.com/sample/model/_lib/display.js?v=4"></script>
-<script type="text/javascript">
-function getX3D (source, display) {
-	//e = jQuery('#'+source);
-	var e = document.body;
-	var qq = (new XMLSerializer()).serializeToString(e);
-	display.value = qq;
-}
-//cb = new DeviceDisplay ('x3dElement', 'orient-compass', 'orient-tilt', 'orient-spin', 'Shapes', true, 'rtLeft', 'rtRight');
-//document.onload = function() {loadStereographic(cb); fullscreen(cb);};
-//jQuery("#goFullScreen").click(function() {fullscreen(cb);});
-
-
-
-var modes = ('Stereo', 'Mono');
-jQuery(document).ready(function() {
-	$('#ViewMode').click(function() {
-		if (this.value == modes[0]) {
-			newMode = 1;
-		} else if (this.value == modes[1]) {
-			newMode = 0;
-		}
-//		$('#svTest').setFieldValue('mode', modes[newMode]);
-		this.value = modes[newMode];
-	});
-});
-</script>
-<style>
-#m0w {background-color:white; height:14px; width:14px; padding:1px; position:relative; }
-#m0b {background-color:black; height:12px; width:12px; padding:1px; }
-#m1 {background-color:red; height:8px; width:8px; padding:2px; display:none; }
-#m2 {background-color:yellow; height:4px; width:4px; padding:2px; display:none; }
-#m3 {background-color:green; height:4px; width:4px; display:none; }
-</style>
 </body>
 </html>

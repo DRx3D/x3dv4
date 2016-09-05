@@ -3,6 +3,7 @@
  * X3DOM JavaScript Library
  * http://www.x3dom.org
  *
+ * V4 additions (C)2016 Daly Realism, Los Angeles
  * (C)2009 Fraunhofer IGD, Darmstadt, Germany
  * Dual licensed under the MIT and GPL
  */
@@ -50,6 +51,16 @@ x3dom.registerNodeType(
              */
             this.addField_SFString(ctx, 'description', "");
 
+            /**
+             * The description of the node. Currently unimplemented
+             * @var {x3dom.fields.SFString} description
+             * @range String
+             * @memberof x3dom.nodeTypes.LookSensor
+             * @initvalue ""
+             * @field x3d
+             * @instance
+             */
+            this.addField_SFString(ctx, 'objectClass', "");
 
             /**
              * Indicates if the node is enabled. An enabled node places a marker on the display. There can be only one LookSensor per scene.
@@ -100,21 +111,10 @@ x3dom.registerNodeType(
 
 
 			this.initDone = false;
-			this.onTargetDuration = 2000;
-			this.onTargetIncrement = 500;
-			this.pollInterval = 200;
-			this.regionSize = 14;
-			this.timerId = 0;
-			this.ShapeNode = null;
-			this.currentLevel = 0;
-			this.fireLevel = 4;
+			this.countdownInterval = 500;	// >0 & in milliseconds
+			this.pollInterval = 200;		// >0 & in milliseconds
+			this.regionSize = 14;			// Needs to be consistent with CSS
 			
-
-
-            //route-able output fields
-            //this.addField_SFVec3f(ctx, 'hitNormal_changed',   0 0 0);
-            //this.addField_SFVec3f(ctx, 'hitPoint_changed',    0 0 0);
-            //this.addField_SFVec2f(ctx, 'hitTexCoord_changed', 0 0);
 
 
             //---------------------------------------
@@ -126,88 +126,143 @@ x3dom.registerNodeType(
             // PUBLIC FUNCTIONS
             //----------------------------------------------------------------------------------------------------------------------
 
+// --> Important not to initialze until all fields are defined. Also any change to the display
+//		size needs to cause a reinitialization. Somehow that needs to be balanced against a
+//		current countdown. Probably reset countdown in that case.
+
+//		Changing certain fields during a countdown will not have an effect on the countdown (e.g., countdownTime)
+//		Changes to the following fields resets the countdown
+//			* objectClass
+//			* enabled
+//
+//		The target is only displayed when this node is enabled
+//		Only one LookSensor can be enabled. If another LookSensor is enabled, this one is disabled.
+//		
+//		Logic for determining objects at scene center is wrong it needs to be similar to the following:
+//		1) Initial targeting
+//			a) get list of objects at scene center
+//			b) discard any that don't match the objectClass field value
+//			c) Save list of matching objects
+//		2) Subsequent tracking (countdown)
+//			a) get list of objects at scene center
+//			b) keep going if any one of these matches the saved list
+//			c) reset if no match
+//
             nodeChanged: function () {
 				if (!this.initDone) {
-					var worldId = this.findX3DDoc()._x3dElem.id;
-					this.displayHeight = jQuery('#'+worldId).height();
-					this.displayWidth = jQuery('#'+worldId).width();
-					this.xCenter = this.displayWidth/2;
-					this.yCenter = this.displayHeight/2;
-					this.xTopLeft = this.xCenter - this.regionSize / 2;
-					this.yTopLeft = this.yCenter - this.regionSize / 2;
-					this.xBottomRight = this.xTopLeft + this.regionSize;
-					this.yBottomRight = this.yTopLeft + this.regionSize;
-					this.htmlAppend = "<div id='m0w' style='top:"+this.yTopLeft+"px; left:"+this.xTopLeft+"px; '><div id='m0b'><div id='m1'><div id='m2'><div id='m3'></div></div></div></div></div>";
+					if (x3dom.singleUse === undefined) {
+						x3dom.singleUse = new Object();
+					}
+					if (x3dom.singleUse.LookSensor === undefined) {
+						x3dom.singleUse.LookSensor = {
+														'worldId' :				this.findX3DDoc()._x3dElem.id,
+														'x3dElement' :			document.getElementById(this.findX3DDoc()._x3dElem.id),
+														'enabledLookSensor' : 	new Object(),
+														'timerId' :				0,
+														'state' :				'INIT',
+														'counter' :				0,
+														'watching' :			[],
+														'display' : 			
+															{
+																'height' :		0,
+																'width' :		0,
+																'center' :		[0,0],
+																'topLeft' :		[0,0],
+																'bottomRight' :	[0,0],
+																'targetId' : 	'x3dom_LookSensor_target',
+																'targetTimeIds' : ['x3dom_LookSensor_t1', 'x3dom_LookSensor_t2', 'x3dom_LookSensor_t3'],
+																'targetTimeElements' : []
+															},
+														'pollScene' :	function()
+															{
+																var centerObjects = x3dom.singleUse.LookSensor.x3dElement.runtime.pickRect
+																	(
+																		x3dom.singleUse.LookSensor.display.topLeft[0],
+																		x3dom.singleUse.LookSensor.display.topLeft[1],
+																		x3dom.singleUse.LookSensor.display.bottomRight[0],
+																		x3dom.singleUse.LookSensor.display.bottomRight[1]
+																	);
+																if (centerObjects.length > 0) {
+																	var objectCount = 0;
+																	if (x3dom.singleUse.LookSensor.enabledLookSensor._vf.objectClass != '') {
+																		for (var ii=0; ii<centerObjects.length; ii++) {
+																			for (var jj=0; jj<centerObjects[ii].classList.length; jj++) {
+																				if (x3dom.singleUse.LookSensor.enabledLookSensor._vf.objectClass == centerObjects[ii].classList[jj]) {}
+																			}
+																			if (centerObjects[ii].classList.length > 0) {}
+																		}
+																	}
+																	x3dom.singleUse.LookSensor.watching = centerObjects;
+																	x3dom.singleUse.LookSensor.countdown();
+																} else {
+																	x3dom.singleUse.LookSensor.reset();
+																	x3dom.singleUse.LookSensor.timerId = window.setTimeout('x3dom.singleUse.LookSensor.pollScene();', x3dom.singleUse.LookSensor.enabledLookSensor.pollInterval);
+																	x3dom.singleUse.LookSensor.state = 'POLL';
+																}
+															},
+														'countdown' :	function() 
+															{
+																if (x3dom.singleUse.LookSensor.counter == 3) {
+																	x3dom.singleUse.LookSensor.reset();
+																	x3dom.singleUse.LookSensor.select();
+																	x3dom.singleUse.LookSensor.counter = 0;
+																	x3dom.singleUse.LookSensor.pollScene();
+																} else {
+//																	x3dom.singleUse.LookSensor.display.targetTimeElements[x3dom.singleUse.LookSensor.counter].style.display = 'block';
+																	var e = x3dom.singleUse.LookSensor.display.targetTimeElements[x3dom.singleUse.LookSensor.counter];
+																	e.style.display = 'block';
+																	x3dom.singleUse.LookSensor.counter++;
+																	x3dom.singleUse.LookSensor.timerId = window.setTimeout('x3dom.singleUse.LookSensor.countdown();', x3dom.singleUse.LookSensor.enabledLookSensor.countdownInterval);
+																	x3dom.singleUse.LookSensor.state = 'CDWN';
+																}
+															},
+														'reset' :		function() 
+															{
+																window.clearTimeout(x3dom.singleUse.LookSensor.timerId);
+																x3dom.singleUse.LookSensor.timerId = 0;
+																x3dom.singleUse.LookSensor.state = 'INIT';
+																for (var ii=0; ii<x3dom.singleUse.LookSensor.display.targetTimeElements.length; ii++) {
+																	x3dom.singleUse.LookSensor.display.targetTimeElements[ii].style.display = 'none';
+																}
+															},
+														'select' :		function ()
+															{
+																alert ('LookSensor triggered...');
+															}
+													};
+						var targetHtml = "<div id='x3dom_LookSensor_target' style='display:none; position:relative; z-index:32000;'><div class='x3dom_LookSensor_border1'><div class='x3dom_LookSensor_border2'>";
+						var tmpHtml = '', ii=0;
+						for (ii=x3dom.singleUse.LookSensor.display.targetTimeIds.length-1; ii>=0; ii--) {
+							tmpHtml = "<div id='" + x3dom.singleUse.LookSensor.display.targetTimeIds[ii] + "' class='x3dom_LookSensor_time" + (ii+1) + "' style='display:none;'>" + tmpHtml + "</div>";
+						}
+						targetHtml += tmpHtml + "</div></div>";
+						var targetElement = document.createElement('template');
+						targetElement.innerHTML = targetHtml;
+						x3dom.singleUse.LookSensor.x3dElement.appendChild(targetElement.content.firstChild);
+						for (ii=0; ii<x3dom.singleUse.LookSensor.display.targetTimeIds.length; ii++) {
+							x3dom.singleUse.LookSensor.display.targetTimeElements[ii] = document.getElementById(x3dom.singleUse.LookSensor.display.targetTimeIds[ii]);
+						}
+					}
 					
-					lookSensor = new ExternalLookSensor (worldId, this.xTopLeft, this.yTopLeft, this.xBottomRight, this.yBottomRight, 
-															this.htmlAppend, 
-															this.pollInterval, this.onTargetIncrement);
+					if (this._vf.enabled) {
+						this.setupLook ();
+					}
 					this.initDone = true;
 				}
+			},
+			setupLook: function() {
+				x3dom.singleUse.LookSensor.enabledLookSensor = this;
+				x3dom.singleUse.LookSensor.display.height	= x3dom.singleUse.LookSensor.x3dElement.offsetHeight;
+				x3dom.singleUse.LookSensor.display.width	= x3dom.singleUse.LookSensor.x3dElement.offsetWidth;
+				x3dom.singleUse.LookSensor.display.center	= [x3dom.singleUse.LookSensor.display.width/2, x3dom.singleUse.LookSensor.display.height/2];
+				x3dom.singleUse.LookSensor.display.topLeft	= [x3dom.singleUse.LookSensor.display.center[0]-this.regionSize/2, x3dom.singleUse.LookSensor.display.center[1]-this.regionSize/2];
+				x3dom.singleUse.LookSensor.display.bottomRight = [x3dom.singleUse.LookSensor.display.center[0]+this.regionSize, x3dom.singleUse.LookSensor.display.center[1]+this.regionSize];
+				var targetElement = document.getElementById('x3dom_LookSensor_target');
+				targetElement.style.top = x3dom.singleUse.LookSensor.display.topLeft[1];
+				targetElement.style.left = x3dom.singleUse.LookSensor.display.topLeft[0];
+				targetElement.style.display = 'block';
+				x3dom.singleUse.LookSensor.pollScene();
 			}
         }
     )
 );
-
-
-/*
- *	This is all the wrong way to do this. It needs to be embedded in the x3dom.runtime someplace/somehow,
- *	but that is to be done later. This works
- */
-
-
-var watcher, world;
-function ExternalLookSensor (x3dId, xtl, ytl, xbr, ybr, html, interval, increment) {
-	world = document.getElementById(x3dId);
-	watcher = new Picker (world, xtl, ytl, xbr, ybr, html, interval, increment);
-	ExternalGetCenterObject();
-};
-function ExternalGetCenterObject () {
-	var objects = world.runtime.pickRect(watcher.xTopLeft,watcher.yTopLeft, watcher.xBottomRight, watcher.yBottomRight);
-	if (objects.length > 0) {
-		watcher.selecting = objects;
-		watcher.start();
-	} else {
-		watcher.reset();
-	}
-	window.setTimeout('ExternalGetCenterObject();', watcher.checkInterval);
-}
-
-	
-	
-Picker = function (we, xtl, ytl, xbr, ybr, html, interval, increment) {
-	this.timerId = 0;
-	this.xTopLeft = xtl;
-	this.yTopLeft = ytl;
-	this.xBottomRight = xbr;
-	this.yBottomRight = ybr;
-	this.duration = increment;
-	this.checkInterval = interval;
-	jQuery(we).append(html);
-}
-Picker.prototype.start = function (level) {
-	if (level === undefined) {
-		if (this.timerId != 0) {return; }
-		level = 0;
-	} else if (level == 3) {
-		this.select();
-		this.reset();
-		return;
-	}
-	level++;
-	var idString = '#m' + level;
-	jQuery(idString).show();
-	var cmdString = "watcher.start("+level+");"
-	this.timerId = window.setTimeout(cmdString, this.duration);
-}
-Picker.prototype.reset = function () {
-	window.clearTimeout(this.timerId);
-	this.timerId = 0;
-	jQuery('#m1').hide();
-	jQuery('#m2').hide();
-	jQuery('#m3').hide();
-}
-Picker.prototype.select = function () {
-	var selectedId = this.selecting[0]._x3domNode._xmlNode.id;
-	jQuery('#ResultDisplay').append('Node shape#'+selectedId+' look-clicked\n');
-}
