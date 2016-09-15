@@ -1,10 +1,21 @@
 <html>
+<!--
+/*
+ * X3DOM JavaScript Library Addition
+ * http://www.x3dom.org
+ *
+ * V4 additions (C)2016 Daly Realism, Los Angeles
+ * X3DOM (C)2009 Fraunhofer IGD, Darmstadt, Germany
+ * Dual licensed under the MIT and GPL
+ */
+ -->
 <head>
     <meta http-equiv='Content-Type' content='text/html;charset=utf-8'/>
     <meta http-equiv="X-UA-Compatible" content="chrome=1,IE=edge" />
 	<link rel='stylesheet' type='text/css' href='page.css'>
 	<link rel='stylesheet' type='text/css' href='http://www.x3dom.org/download/x3dom.css'/>
 	<script type='text/javascript' src='http://www.x3dom.org/download/x3dom.js'> </script>
+	
 	<script type='text/javascript' src='../src/nodes/PointingDeviceSensor/LookSensor.js'> </script>
 
 	<link rel='stylesheet' type='text/css' href='http://www.x3dom.org/download/x3dom.css'/>
@@ -65,29 +76,8 @@ if (flags.DESKTOP) {
 		</div>
 		<div id='goFullScreen'>Go Full Screen</div>
 	</div>
-	<div id='controls'>
-		<div id='mobile'>
-			<div id='look-left-right'>
-				<label>Look Left-Right (<span id='llr_value'>0</span>)</label>
-				<div id='look-left-right-slider'></div>
-			</div>
-			<div id='up-down'>
-				<label>Tilt Up-Down (<span id='ud_value'>0</span>)</label>
-				<div id='up-down-slider'></div>
-			</div>
-			<div id='readout'>
-				<div>Speed: <span id='speed_value'>0</span></div>
-				<div>Turning: <span id='turn_value'>0</span></div>
-			</div>
-			<div id='steer-left-right'>
-				<label>Steer Left-Right (<span id='slr_value'>0</span>)</label>
-				<div id='steer-left-right-slider'></div>
-			</div>
-		</div>
-		<div id='viewing'>
-			<input id='ViewerButton' type='button' value='Viewer'> &nbsp; <input id='OverviewButton' type='button' value='Overview'>
-			<input id='ViewMode' type='button' value='Stereo'>
-		</div>
+	<div id='description' style='width:40em; '>
+		<p>This example tests the <b>LookSensor</b> node. The <b>LookSensor</b> node is declared to only consider <b>Shape</b> nodes that have the 'side' <i>class</i> attribute. In this example that is the cone and sphere. When either of those shapes is under the target marker, the marker begins its countdown. When the countdown is complete an HTML DOM <i>click</i> is generated and handled by the <i>onclick</i> handler for that shape.</p>
 	</div>
     <div id='scene'>
 		<script>
@@ -102,7 +92,7 @@ if (flags.DESKTOP) {
         <viewpoint DEF='vp' centerOfRotation='0 0 0' position='0 0 10'></viewpoint>
         <background DEF='bgnd' skyColor="0.4 0.4 0.5"></background>
 		<Transform DEF='CenterBox' translation='0 0 0'>
-			<Shape id='center_box' class='s1'>
+			<Shape id='center_box' class='s1' onclick='clickBox(event); return false;'>
 				<Box size='1 1 1'></Box>
 				<Appearance>
 					<Material diffusecolor='1 0 0'></Material>
@@ -110,7 +100,7 @@ if (flags.DESKTOP) {
 			</Shape>
 		</Transform>
 		<Transform DEF='LeftSphere' translation='-4 0 0'>
-			<Shape id='left_sphere' class='s2'>
+			<Shape id='left_sphere' class='s2 side' onclick='clickSphere(event); return false;'>
 				<Sphere radius='.5'></Sphere>
 				<Appearance>
 					<Material diffusecolor='0 1 0'></Material>
@@ -118,14 +108,14 @@ if (flags.DESKTOP) {
 			</Shape>
 		</Transform>
 		<Transform DEF='RightCone' translation='4 0 0'>
-			<Shape id='right_cone' class='s3'>
+			<Shape id='right_cone' class='s3 side'>
 				<Cone height='1' bottomRadius='.5'></Cone>
 				<Appearance>
 					<Material diffusecolor='0 0 1'></Material>
 				</Appearance>
 			</Shape>
 		</Transform>
-		<LookSensor enabled='TRUE'></LookSensor>
+		<LookSensor enabled='TRUE' objectClass='side'></LookSensor>
 	</scene>
 	<script>
 		if (flags.X3D) {
@@ -136,8 +126,8 @@ if (flags.DESKTOP) {
 	</script>
 	</div>
 	
-	<div style='float:right; overflow:scroll; height:250px; width:200px; '>
-		<div style='background-color:white; width:100px; height:50px; padding:8px; margin-bottom:25px; '>
+	<div style='float:right; overflow:scroll; height:450px; width:450px; '>
+		<div style='background-color:white; width:16px; height:16px; padding:8px; border:1px black solid; float:left; '>
 			<div id='x3dom_LookSensor_target' class='x3dom_LookSensor_border1'>
 				<div class='x3dom_LookSensor_border2'>
 					<div id='x3dom_LookSensor_time1' class='x3dom_LookSensor_time1'>
@@ -149,7 +139,7 @@ if (flags.DESKTOP) {
 				</div>
 			</div>
 		</div>
-		<div style='background-color:black; width:100px; height:50px; padding:8px; '>
+		<div style='background-color:black; width:16px; height:16px; padding:8px;  border:1px white solid; float:left; '>
 			<div id='x3dom_LookSensor_target' class='x3dom_LookSensor_border1'>
 				<div class='x3dom_LookSensor_border2'>
 					<div id='x3dom_LookSensor_time1' class='x3dom_LookSensor_time1'>
@@ -159,8 +149,35 @@ if (flags.DESKTOP) {
 						</div>
 					</div>
 				</div>
+			</div>
+		</div>
+		<div style='clear:both;'>
+			<h3>Debug log</h3>
+			<div id='log_debug' style='overflow:scroll; height:350px; width:430px;'>
 			</div>
 		</div>
 	</div>
+	
+<script>
+function clickSphere (t) {
+	jQuery('#log_debug').prepend('<div>Sphere click handler</div>');
+}
+function clickCone (t) {
+	jQuery('#log_debug').prepend('<div>Cone click handler</div>');
+}
+function clickBox (t) {
+	jQuery('#log_debug').prepend('<div>Box click handler</div>');
+}
+function clickHandler (ev) {
+	jQuery('#log_debug').prepend('<div>Event handler</div>');
+}
+var e = document.getElementById('x3dElement');
+e.addEventListener('click', clickHandler, false);
+e = document.getElementById('goFullScreen');
+e.addEventListener('click', clickHandler, false);
+e = document.getElementById('center_box');
+e.addEventListener('click', clickHandler, false);
+
+</script>
 </body>
 </html>

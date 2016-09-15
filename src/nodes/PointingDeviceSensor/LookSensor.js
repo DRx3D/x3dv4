@@ -14,19 +14,17 @@ x3dom.registerNodeType(
     defineClass(x3dom.nodeTypes.X3DTouchSensorNode,
 
         /**
-         * Constructor for TouchSensor
-         * @constructs x3dom.nodeTypes.TouchSensor
-         * @x3d 3.3
+         * Constructor for LookSensor
+         * @constructs x3dom.nodeTypes.LookSensor
+         * @x3d 4.0 proposed
          * @component PointingDeviceSensor
          * @status experimental
          * @extends x3dom.nodeTypes.X3DDragSensorNode
          * @param {Object} [ctx=null] - context object, containing initial settings like namespace
-         * @classdesc TouchSensor tracks location and state of the pointing device, and detects when user points at
-         * geometry. Hint: X3DOM, running in an HTML environment, you actually don't need this node, as you can
-         * simply use HTML events (like onclick) on your nodes. However, this node is implemented to complete the
-         * pointing device sensor component, and it may be useful to ensure compatibility with older X3D scene content.
+         * @classdesc LookSensor tracks objects at scene center and determines if any allowed object remains at the
+		 * center long enough. If so, it triggers an onclick event for that [Shape] node
 		 *
-		 *	This node works by occasionally polling to see if there is a Shape node with the class property 'X3D-LookFind' located
+		 *	This node works by occasionally polling to see if there is a Shape node with the class with the specified value located
 		 *	in a small region at display center. If so, the first object is identified and checked at regular intervales until
 		 *	countdownTime seconds after first detection. As long as that Shape node is the first object at the checks, then 
 		 *	an onclick DOM event is fired at the end of the countdownTime. It is up to the Shape (or parent) node to handle the
@@ -173,48 +171,68 @@ x3dom.registerNodeType(
 																'targetTimeIds' : ['x3dom_LookSensor_t1', 'x3dom_LookSensor_t2', 'x3dom_LookSensor_t3'],
 																'targetTimeElements' : []
 															},
+/*
+ *	Get and save list of objects with matching class attributes
+ *	If there are matching objects, then start countdown
+ *	Otherwise, setup for future poll
+ */
 														'pollScene' :	function()
 															{
-																var centerObjects = x3dom.singleUse.LookSensor.x3dElement.runtime.pickRect
-																	(
-																		x3dom.singleUse.LookSensor.display.topLeft[0],
-																		x3dom.singleUse.LookSensor.display.topLeft[1],
-																		x3dom.singleUse.LookSensor.display.bottomRight[0],
-																		x3dom.singleUse.LookSensor.display.bottomRight[1]
-																	);
-																if (centerObjects.length > 0) {
-																	var objectCount = 0;
-																	if (x3dom.singleUse.LookSensor.enabledLookSensor._vf.objectClass != '') {
-																		for (var ii=0; ii<centerObjects.length; ii++) {
-																			for (var jj=0; jj<centerObjects[ii].classList.length; jj++) {
-																				if (x3dom.singleUse.LookSensor.enabledLookSensor._vf.objectClass == centerObjects[ii].classList[jj]) {}
-																			}
-																			if (centerObjects[ii].classList.length > 0) {}
-																		}
-																	}
-																	x3dom.singleUse.LookSensor.watching = centerObjects;
+																x3dom.singleUse.LookSensor.watching = x3dom.singleUse.LookSensor.getObjectsClass(x3dom.singleUse.LookSensor.display.topLeft, x3dom.singleUse.LookSensor.display.bottomRight, x3dom.singleUse.LookSensor.enabledLookSensor._vf.objectClass);
+																if (x3dom.singleUse.LookSensor.watching.length > 0) {
+																	//jQuery('#log_debug').prepend('<div>Watching ' + x3dom.singleUse.LookSensor.watching.length + ' objects</div>');
 																	x3dom.singleUse.LookSensor.countdown();
 																} else {
+																	//jQuery('#log_debug').prepend('<div>Clear watch</div>');
 																	x3dom.singleUse.LookSensor.reset();
 																	x3dom.singleUse.LookSensor.timerId = window.setTimeout('x3dom.singleUse.LookSensor.pollScene();', x3dom.singleUse.LookSensor.enabledLookSensor.pollInterval);
 																	x3dom.singleUse.LookSensor.state = 'POLL';
 																}
 															},
+														'getObjectsClass' :	function(topLeft, bottomRight, cls)
+															{
+																var centerObjects = x3dom.singleUse.LookSensor.x3dElement.runtime.pickRect
+																	(topLeft[0], topLeft[1], bottomRight[0], bottomRight[1]);
+																if (centerObjects.length == 0) {return [];}
+																if (cls == '') {return centerObjects;}
+																var matchingObjs = [];
+																for (var ii=0; ii<centerObjects.length; ii++) {
+																	for (var jj=0; jj<centerObjects[ii].classList.length; jj++) {
+																		if (cls == centerObjects[ii].classList[jj]) {
+																			matchingObjs[matchingObjs.length] = centerObjects[ii];
+																		}
+																	}
+																}
+																return matchingObjs;
+															},
+
+/*
+ *	Countdown timer on the selected object
+ *	Makes sure that the first initially found object is
+ *	still the first object; otherwise reset
+ *	Generate event if at final stage
+ *	Otherwise increment countdown stage
+ */
 														'countdown' :	function() 
 															{
-																if (x3dom.singleUse.LookSensor.counter == 3) {
+																var currentObjects = x3dom.singleUse.LookSensor.getObjectsClass(x3dom.singleUse.LookSensor.display.topLeft, x3dom.singleUse.LookSensor.display.bottomRight, x3dom.singleUse.LookSensor.enabledLookSensor._vf.objectClass);
+																if (currentObjects.length == 0 || currentObjects[0] != x3dom.singleUse.LookSensor.watching[0]) {
 																	x3dom.singleUse.LookSensor.reset();
-																	x3dom.singleUse.LookSensor.select();
+																	x3dom.singleUse.LookSensor.counter = 0;
+																	x3dom.singleUse.LookSensor.pollScene();
+																} else if (x3dom.singleUse.LookSensor.counter == 3) {
+																	x3dom.singleUse.LookSensor.reset();
+																	x3dom.singleUse.LookSensor.select(currentObjects[0]);
 																	x3dom.singleUse.LookSensor.counter = 0;
 																	x3dom.singleUse.LookSensor.pollScene();
 																} else {
-//																	x3dom.singleUse.LookSensor.display.targetTimeElements[x3dom.singleUse.LookSensor.counter].style.display = 'block';
 																	var e = x3dom.singleUse.LookSensor.display.targetTimeElements[x3dom.singleUse.LookSensor.counter];
 																	e.style.display = 'block';
 																	x3dom.singleUse.LookSensor.counter++;
 																	x3dom.singleUse.LookSensor.timerId = window.setTimeout('x3dom.singleUse.LookSensor.countdown();', x3dom.singleUse.LookSensor.enabledLookSensor.countdownInterval);
 																	x3dom.singleUse.LookSensor.state = 'CDWN';
 																}
+																//jQuery('#log_debug').prepend('<div>...' + x3dom.singleUse.LookSensor.counter + '</div>');
 															},
 														'reset' :		function() 
 															{
@@ -225,9 +243,32 @@ x3dom.registerNodeType(
 																	x3dom.singleUse.LookSensor.display.targetTimeElements[ii].style.display = 'none';
 																}
 															},
-														'select' :		function ()
+														'select' :		function (obj)
 															{
-																alert ('LookSensor triggered...');
+																this.x3dElement.runtime.canvas.doc.onMousePress
+																	(
+																		this.x3dElement.runtime.canvas.gl,
+																		x3dom.singleUse.LookSensor.display.center[0],
+																		x3dom.singleUse.LookSensor.display.center[1],
+																		1
+																	);
+																this.x3dElement.runtime.canvas.doc.onMouseRelease
+																	(
+																		this.x3dElement.runtime.canvas.gl,
+																		x3dom.singleUse.LookSensor.display.center[0],
+																		x3dom.singleUse.LookSensor.display.center[1],
+																		1, 1
+																	);
+/*
+ * this.x3dElement.context.runtime.canvas.canvas is the canvas
+ * this.x3dElement.context.runtime.canvas.doc is the is needed for accessing various things
+ * this.x3dElement.context.runtime.canvas.doc._viewarea is the is the Viewarea
+ *	x3dom.X3DDocument.prototype.onMouseRelease = function (ctx, x, y, buttonState, prevButton) {...}
+ *
+ *	this.x3dElement.runtime.canvas.doc.onMouseRelease (
+ *		this.x3dElement.runtime.canvas.gl,
+ *		x, y, 1, 1);	// for "left" button press & release
+ */
 															}
 													};
 						var targetHtml = "<div id='x3dom_LookSensor_target' style='display:none; position:relative; z-index:32000;'><div class='x3dom_LookSensor_border1'><div class='x3dom_LookSensor_border2'>";
