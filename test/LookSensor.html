@@ -47,7 +47,6 @@ flags.DESKTOP	= tf[flags.DESKTOP];
 flags.X3D		= tf[flags.X3D];
 
 if (flags.DESKTOP) {
-	//alert ('Loading jQuery-ui');
 	document.writeln ('<scri' + 'pt src="lib/jquery-ui-1.11.4/jquery-ui.js"></scr' + 'ipt>');
 	document.writeln ('<link rel="stylesheet" type="text/css" href="lib/jquery-ui-1.11.4/jquery-ui.css">');
 }
@@ -168,11 +167,19 @@ function clickCone (t) {
 function clickBox (t) {
 	jQuery('#log_debug').prepend('<div>Box click handler</div>');
 }
+function clickShape (ev) {
+	jQuery('#log_debug').prepend('<div>Shaoe Event handler</div>');
+}
 function clickHandler (ev) {
 	jQuery('#log_debug').prepend('<div>Event handler</div>');
 }
-var e = document.getElementById('x3dElement');
-e.addEventListener('click', clickHandler, false);
+var e = document.getElementById('right_cone');
+e.addEventListener('click', clickShape, false);
+var e = document.getElementById('center_box');
+e.addEventListener('click', clickShape, false);
+var e = document.getElementById('left_sphere');
+e.addEventListener('click', clickShape, false);
+
 e = document.getElementById('goFullScreen');
 e.addEventListener('click', clickHandler, false);
 e = document.getElementById('center_box');

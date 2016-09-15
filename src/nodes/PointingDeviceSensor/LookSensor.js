@@ -206,13 +206,6 @@ x3dom.registerNodeType(
 																return matchingObjs;
 															},
 
-/*
- *	Countdown timer on the selected object
- *	Makes sure that the first initially found object is
- *	still the first object; otherwise reset
- *	Generate event if at final stage
- *	Otherwise increment countdown stage
- */
 														'countdown' :	function() 
 															{
 																var currentObjects = x3dom.singleUse.LookSensor.getObjectsClass(x3dom.singleUse.LookSensor.display.topLeft, x3dom.singleUse.LookSensor.display.bottomRight, x3dom.singleUse.LookSensor.enabledLookSensor._vf.objectClass);
@@ -259,16 +252,6 @@ x3dom.registerNodeType(
 																		x3dom.singleUse.LookSensor.display.center[1],
 																		1, 1
 																	);
-/*
- * this.x3dElement.context.runtime.canvas.canvas is the canvas
- * this.x3dElement.context.runtime.canvas.doc is the is needed for accessing various things
- * this.x3dElement.context.runtime.canvas.doc._viewarea is the is the Viewarea
- *	x3dom.X3DDocument.prototype.onMouseRelease = function (ctx, x, y, buttonState, prevButton) {...}
- *
- *	this.x3dElement.runtime.canvas.doc.onMouseRelease (
- *		this.x3dElement.runtime.canvas.gl,
- *		x, y, 1, 1);	// for "left" button press & release
- */
 															}
 													};
 						var targetHtml = "<div id='x3dom_LookSensor_target' style='display:none; position:relative; z-index:32000;'><div class='x3dom_LookSensor_border1'><div class='x3dom_LookSensor_border2'>";
