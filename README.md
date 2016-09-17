@@ -4,6 +4,13 @@ mobile devices and VR environments. The intent is that these be included in X3D 
 Documentation for V4 nodes is at http://tools.realism.com/specification/x3d-v40
 Documentation for specific nodes is at http://tools.realism.com/specification/x3d-v40/changes-additions-x3d-v33
 
+2016-09-16 Nodes
+Nodes are generally not fully implemented. This initial work is to make sure the concept is correct and workable.
+
+ * Animate (combines TimeSensor and various Interpolators in an efficient handling of events)
+ * Macro (node expansion with string substitution)
+ * LookSensor (Handles events when staring at a shape)
+
 
 Welcome to X3DOM 
 ================

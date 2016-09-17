@@ -16,13 +16,13 @@
 	<link rel='stylesheet' type='text/css' href='http://www.x3dom.org/download/x3dom.css'/>
 	<script type='text/javascript' src='http://www.x3dom.org/download/x3dom.js'> </script>
 	
-	<script type='text/javascript' src='../src/nodes/PointingDeviceSensor/LookSensor.js'> </script>
+	<script type='text/javascript' src='../src/v4Nodes.js'> </script>
 
 	<link rel='stylesheet' type='text/css' href='http://www.x3dom.org/download/x3dom.css'/>
 	<link rel='stylesheet' type='text/css' href='LookSensor.css'>
 	<script type="text/javascript" src="http://code.jquery.com/jquery-2.1.0.min.js" ></script>
 
-	<script src="http://realism.com/sample/model/_lib/ui/1.11.1/jquery-ui.js"></script>
+	<!--	script src="http://realism.com/sample/model/_lib/ui/1.11.1/jquery-ui.js"></script	-->
 <style>
 .x3dom-logContainer {font-size:small;}
 </style>
@@ -47,8 +47,8 @@ flags.DESKTOP	= tf[flags.DESKTOP];
 flags.X3D		= tf[flags.X3D];
 
 if (flags.DESKTOP) {
-	document.writeln ('<scri' + 'pt src="lib/jquery-ui-1.11.4/jquery-ui.js"></scr' + 'ipt>');
-	document.writeln ('<link rel="stylesheet" type="text/css" href="lib/jquery-ui-1.11.4/jquery-ui.css">');
+	//document.writeln ('<scri' + 'pt src="lib/jquery-ui-1.11.4/jquery-ui.js"></scr' + 'ipt>');
+	//document.writeln ('<link rel="stylesheet" type="text/css" href="lib/jquery-ui-1.11.4/jquery-ui.css">');
 }
 	</script>
 	<!-- link rel="stylesheet" href="http://realism.com/sample/model/_lib/ui/1.11.1/themes/smoothness/jquery-ui.css" -->
@@ -156,7 +156,7 @@ if (flags.DESKTOP) {
 			</div>
 		</div>
 	</div>
-	
+	 
 <script>
 function clickSphere (t) {
 	jQuery('#log_debug').prepend('<div>Sphere click handler</div>');
