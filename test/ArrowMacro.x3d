@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE X3D PUBLIC "ISO//Web3D//DTD X3D 3.2//EN" "http://www.web3d.org/specifications/x3d-3.2.dtd">
+<X3D profile='Immersive' version='3.2' xmlns:xsd='http://www.w3.org/2001/XMLSchema-instance' xsd:noNamespaceSchemaLocation='http://www.web3d.org/specifications/x3d-3.2.xsd'>
+    <head>
+        <meta content='ArrowMacro.x3d' name='title'/>
+        <meta content='Arrow with length and color params' name='description'/>
+        <meta content='Andreas Plesch' name='creator'/>
+        <meta content='2016-08-28' name='created'/>
+        <meta content='*enter date of latest revision here*' name='modified'/>
+        <meta content='*enter version here, if any*' name='version'/>
+        <meta content='Copyright 2016, A. Plesch' name='rights'/>
+        <meta content='*enter subject keywords here*' name='subject'/>
+        <meta content='*enter permission statements or url here*' name='accessRights'/>
+        <meta content='*enter online Uniform Resource Identifier (URI) or Uniform Resource Locator (URL) address for this file here*' name='identifier'/>
+        <meta content='../../license.html' name='license'/>
+        <!-- Additional authoring resources for meta-tags: http://www.dublincore.org/documents/dcmi-terms http://www.dublincore.org/documents/dces http://www.w3.org/TR/html4/struct/global.html#h-7.4.4 http://vancouver-webpages.com/META http://vancouver-webpages.com/META/about-mk-metas2.html Additional authoring resources for language codes: ftp://ftp.isi.edu/in-notes/bcp/bcp47.txt http://www.loc.gov/standards/iso639-2/langhome.html http://www.iana.org/numbers.html#L -->
+   </head>
+    <Scene>
+      <!-- X arrow and label -->
+            <Shape id='%DefId%' isPickable="false" DEF="AXIS_LINE_X">
+              <IndexedLineSet index="0 1 -1">
+                <Coordinate point="0 0 0.001, %length% 0 0.001"></Coordinate>
+              </IndexedLineSet>
+              <Appearance DEF='Red'>
+                <Material diffuseColor="0 0 0" emissiveColor='%color%'></Material>
+              </Appearance>
+            </Shape>
+            <Transform translation='1 0 0'>
+              <Transform rotation='0 0 1 -1.57079632679'>
+                <Shape isPickable="false" DEF="AXIS_ARROW_X">
+                  <Cone DEF='ArrowCone' bottomRadius='.10' height='0.5' subdivision="16"></Cone>
+                  <Appearance USE='Red'></Appearance>
+                </Shape>
+              </Transform>
+              <Transform rotation='1 0 0 0'>
+                <Billboard axisOfRotation='0 0 0'>
+                  <Transform translation='0 0 %length%'>    
+                  <Transform translation='0 0 0.2'>
+                    <Shape isPickable="false" DEF="AXIS_LABEL_X">
+                    <Text string="X" solid="false">
+                      <FontStyle size="0.3"></FontStyle>
+                    </Text>
+                    <Appearance USE='Red'></Appearance>
+                    </Shape>
+                  </Transform>
+                  </Transform>
+                </Billboard>
+              </Transform>
+            </Transform>
+    </Scene>
+</X3D>
